@@ -5,24 +5,31 @@
  * Created by Андрей on 20.05.2016.
  */
 
-
 /*
  CommentsBlock
  CommentsList
  Comment
  CommentForm
  * */
+var Comments = app.collections.Comments;
+//setTimeout(()=>{app.collections.comment.fetch({query:{}},(res)=>{console.log(res)})},200);
+var comments =  new Comments([{author: "Bob", text: "cool"}]);
 
-;
+comments.each(el => el.save({}, function (res) {
+    console.log(res);
+}));
 
 var CommentBlock = React.createClass({
     getInitialState: function () {
         return ({data:[]})
     },
     loadCommentsFromServer: function () {
-
-        $.get(this.props.url,{} ,function (data) {
-            this.setState({data: data})
+        
+        $.get(this.props.url,{} ,function (response) {
+            //console.log(app);
+            //console.log(new app.collections.Comments(response));
+            //var data = app.collections.Comment(response);
+            this.setState({data: response})
         }.bind(this));
         /*$.ajax({
          url: this.props.url,
@@ -55,7 +62,9 @@ var CommentBlock = React.createClass({
 var CommentList = React.createClass({
     render: function () {
         var comments = this.props.data.map((com)=> {
-                return (<Comment item={com}/>)
+                return (<Comment item={com}>
+                    {com.text}
+                </Comment>)
     });
 
         return (
@@ -68,7 +77,8 @@ var CommentList = React.createClass({
 
 var Comment = React.createClass({
     render: function () {
-        return <li key={this.props.item.author}>{this.props.item.author}</li>
+        return <li key={this.props.item.author}>{this.props.children}
+        </li>
     }
 });
 
@@ -78,5 +88,5 @@ var CommentForm = React.createClass({
     }
 });
 
-console.log(-1);
+
 ReactDOM.render(<CommentBlock url="/api/comments"/>, document.getElementById('container'));
