@@ -11,48 +11,38 @@
  Comment
  CommentForm
  * */
-var Comments = app.collections.Comments;
-//setTimeout(()=>{app.collections.comment.fetch({query:{}},(res)=>{console.log(res)})},200);
-var comments =  new Comments([{author: "Bob", text: "cool"}]);
 
-comments.each(el => el.save({}, function (res) {
-    console.log(res);
-}));
+var comments = new app.collections.Comment;
+
+
 
 var CommentBlock = React.createClass({
     getInitialState: function () {
         return ({data:[]})
     },
     loadCommentsFromServer: function () {
-        
-        $.get(this.props.url,{} ,function (response) {
-            //console.log(app);
-            //console.log(new app.collections.Comments(response));
-            //var data = app.collections.Comment(response);
-            this.setState({data: response})
-        }.bind(this));
-        /*$.ajax({
-         url: this.props.url,
-         type: 'json',
-         cache: false,
-         success: function(data) {
-         this.setState({data: data})
-         }.bind(this),
-         error: function(xhr, status, err) {
-
-         }.bind(this)
-         })*/
+        comments.fetch({success: (c,r,o)=>{this.setState({data: c})}})
     },
     componentDidMount: function () {
-
+        comments.on('remove', (m,c) => {
+          this.setState({data: c})
+        });
         this.loadCommentsFromServer()
+    },
+    onSubmit: function (options) {
+        let model = new comments.model(options);
+        comments.add(model);
+        model.save({},{success:(m,r,o)=> {
+            this.setState({data: m.collection})
+            }
+        })
     },
     render: function () {
         return (
             <div className="commentsBox">
             <h1>Comments
             <CommentList data={this.state.data}/>
-        <CommentForm/>
+        <CommentForm onSubmit={this.onSubmit}/>
         </h1>
         </div>
         );
@@ -62,9 +52,10 @@ var CommentBlock = React.createClass({
 var CommentList = React.createClass({
     render: function () {
         var comments = this.props.data.map((com)=> {
-                return (<Comment item={com}>
-                    {com.text}
-                </Comment>)
+            return (
+              <Comment item={com} key={com.id}>
+              </Comment>
+            )
     });
 
         return (
@@ -76,15 +67,52 @@ var CommentList = React.createClass({
 });
 
 var Comment = React.createClass({
+    remove: function () {
+      this.props.item.destroy();
+    },
     render: function () {
-        return <li key={this.props.item.author}>{this.props.children}
+        return <li>
+            <div class="comment__author">{this.props.item.get('author')}</div>
+            <div class="comment__text">{this.props.item.get('text')}</div>
+            <div class="comment__remove" onClick={this.remove}>X</div>
         </li>
     }
 });
 
 var CommentForm = React.createClass({
+    getInitialState: function () {
+        return {author:'', text: ''}
+    },
+    handleAuthorChange: function (e) {
+        this.setState({author: e.target.value})
+    },
+    handleTextChange: function (e) {
+        this.setState({text: e.target.value})
+    },
+    handleSubmit: function (e) {
+        e.preventDefault();
+        var author = this.state.author.trim();
+        var text = this.state.text.trim();
+        if(!author || !text) return;
+        this.props.onSubmit({author, text});
+        this.setState({author:'', text: ''})
+    },
     render: function () {
-        return <form/>
+        return <form onSubmit={this.handleSubmit}>
+            <input
+              value={this.state.author}
+              placeholder="Type a author"
+              type="text"
+              onChange={this.handleAuthorChange}
+            />
+            <input
+              value={this.state.text}
+              placeholder= "Type a text"
+              type="text"
+              onChange={this.handleTextChange}
+            />
+            <input type="submit" value="Post" />
+        </form>
     }
 });
 
