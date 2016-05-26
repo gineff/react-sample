@@ -3,8 +3,11 @@
  */
 import 'todomvc-app-css/index.css';
 import {Provider} from 'react-redux';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './containers/App.js';
 import store from './store';
-import Header from './components/Header';
 
-ReactDOM.render(<Provider store={store}><Header/></Provider>, document.getElementById('container'));
+
+ReactDOM.render(<Provider store={store}><App/></Provider>, document.getElementById('container'));
 

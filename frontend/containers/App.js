@@ -4,6 +4,7 @@
 
 
 import React, {Component} from 'react';
+import Header from '../components/Header';
 import {connect} from 'react-redux';
 import { bindActionCreators } from 'redux'
 import * as TodoActions from '../actions'
@@ -12,7 +13,7 @@ class App extends Component {
   render() {
     const {todos, actions} = this.props;
     return <div>
-      <Header actions={actions.addTodo}/>
+      <Header addTodo={actions.addTodo}/>
     </div>
   }
 }
